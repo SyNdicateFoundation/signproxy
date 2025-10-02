@@ -33,6 +33,11 @@ If you need to consume proxy lists from public Telegram channels, subscription s
 go get github.com/SyNdicateFoundation/signproxy
 ```
 
+Use following tags for building you binary
+```
+-tags=with_utls,with_gvisor,with_quic,with_dhcp,with_wireguard,with_acme,with_clash_api
+```
+
 ## Basic Usage
 
 The library exposes a straightforward API. You provide a proxy URL, and you get back an object that satisfies the `Proxy` interface, which has a `DialContext` method you can use in any standard Go networking code.
