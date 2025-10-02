@@ -3,7 +3,7 @@ module github.com/SyNdicateFoundation/signproxy
 go 1.25.0
 
 require (
-	github.com/sagernet/sing v0.7.10
+	github.com/sagernet/sing v0.7.12
 	github.com/sagernet/sing-box v1.12.8
 )
 
