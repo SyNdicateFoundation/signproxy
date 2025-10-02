@@ -63,7 +63,7 @@ func main() {
 	}
 
 	// The String() method returns the cleaned name from the URL fragment.
-	fmt.Printf("Successfully parsed proxy: %s\n", proxy.String()) // Prints "MyVlessProxy"
+	fmt.Printf("Successfully parsed proxy: %s\n", proxy.String()) // Prints "vless://a-uuid@example.com:443?security=reality&sni=sni.example.com&fp=chrome&pbk=YOUR_REALITY_KEY&sid=abcdef1234"
 
 	// 2. Create an HTTP client that uses the proxy's custom dialer.
 	httpClient := &http.Client{
