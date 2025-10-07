@@ -11,7 +11,7 @@ func cleanBruteForce(cleanedURL string) string {
 	if schemeEnd != -1 {
 		scheme := cleanedURL[:schemeEnd]
 		rest := cleanedURL[schemeEnd+3:]
-		
+
 		switch scheme {
 		case "ss":
 			// Handles ss://user@host:port@comment format
@@ -49,7 +49,7 @@ func cleanBruteForce(cleanedURL string) string {
 			cleanedURL = "vmess://" + cleanedPayload
 		}
 	}
-	
+
 	return cleanedURL
 }
 
@@ -58,32 +58,32 @@ func cleanProxyURL(raw string) string {
 	raw = strings.ReplaceAll(raw, "\u0026", "&")
 	raw = strings.ReplaceAll(raw, "&amp;", "&")
 	raw = strings.ReplaceAll(raw, "&#38;", "&")
-	
+
 	noFragment := raw
 	if i := strings.Index(raw, "#"); i != -1 {
 		noFragment = raw[:i]
 	}
-	
+
 	base, rawQuery := noFragment, ""
 	if i := strings.Index(noFragment, "?"); i != -1 {
 		base = noFragment[:i]
 		rawQuery = noFragment[i+1:]
 	}
-	
+
 	queryVals, err := url.ParseQuery(rawQuery)
 	if err != nil {
 		return raw
 	}
-	
+
 	queryVals.Del("ps")
 	queryVals.Del("tag")
 	queryVals.Del("label")
 	queryVals.Del("remarks")
-	
+
 	queryStr := queryVals.Encode()
 	if queryStr != "" {
 		return base + "?" + queryStr
 	}
-	
+
 	return cleanBruteForce(base)
 }

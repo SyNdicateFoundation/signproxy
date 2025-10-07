@@ -9,7 +9,7 @@ import (
 	"net/url"
 	"testing"
 	"time"
-	
+
 	"github.com/sagernet/sing-box/option"
 )
 
@@ -18,7 +18,7 @@ func TestFromURL(t *testing.T) {
 	realityShortID := "a1b2c3d4e5f6a7b8"
 	wgPrivateKey := "gCrpA4g8MvjGn85nslmf8Uv25soA9j+R5f6vOa3a41E="
 	wgPublicKey := "w9q0T7aiJ27v39yO85yD5jY3kQ1Oa2u5b8a/cDef3gY="
-	
+
 	testCases := []struct {
 		name      string
 		url       string
@@ -67,7 +67,7 @@ func TestFromURL(t *testing.T) {
 			shouldErr: true,
 		},
 	}
-	
+
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			proxy, err := FromURL(time.Second*8, tc.url)
@@ -106,24 +106,24 @@ func TestDirectConnection(t *testing.T) {
 				if err != nil {
 					return nil, err
 				}
-				
+
 				return proxy.DialContext(ctx, network, tcpAddr)
 			},
 			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 		},
 	}
-	
-	req, err := http.NewRequestWithContext(context.Background(), "GET", "https://httpbin.org/get", nil)
+
+	req, err := http.NewRequestWithContext(context.Background(), "GET", "https://httpbun.com/get", nil)
 	if err != nil {
 		t.Fatalf("Failed to create request: %v", err)
 	}
-	
+
 	req.Header.Set("User-Agent", "SignProxy-Test-Client")
 	resp, err := client.Do(req)
 	if err != nil {
 		t.Fatalf("Request failed: %v", err)
 	}
-	
+
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
 		bodyBytes, _ := io.ReadAll(resp.Body)

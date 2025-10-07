@@ -35,7 +35,7 @@ go get github.com/SyNdicateFoundation/signproxy
 
 Use following tags for building you binary
 ```
--tags=with_utls,with_gvisor,with_quic,with_dhcp,with_wireguard,with_acme,with_clash_api
+-tags=with_utls,with_gvisor,with_quic,with_dhcp,with_acme,with_clash_api,with_wireguard
 ```
 
 ## Basic Usage

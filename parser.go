@@ -11,7 +11,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
-	
+
 	"github.com/sagernet/sing-box/option"
 	"github.com/sagernet/sing/common/json/badoption"
 	N "github.com/sagernet/sing/common/network"
@@ -163,7 +163,7 @@ func parseShadowsocks(out *option.ShadowsocksOutboundOptions, u *url.URL) error 
 			return fmt.Errorf("failed to parse decoded ss url: %w", err)
 		}
 	}
-	
+
 	host, portStr, err := net.SplitHostPort(u.Host)
 	if err != nil {
 		return fmt.Errorf("ss host/port invalid: %w", err)
@@ -173,10 +173,10 @@ func parseShadowsocks(out *option.ShadowsocksOutboundOptions, u *url.URL) error 
 		return fmt.Errorf("invalid ss port: %w", err)
 	}
 	out.ServerOptions = option.ServerOptions{Server: host, ServerPort: port}
-	
+
 	var method, password string
 	q := u.Query()
-	
+
 	if u.User != nil {
 		if decoded, err := base64Decode(u.User.String()); err == nil {
 			parts := strings.SplitN(string(decoded), ":", 2)
@@ -196,16 +196,16 @@ func parseShadowsocks(out *option.ShadowsocksOutboundOptions, u *url.URL) error 
 			}
 		}
 	}
-	
+
 	if q.Get("encryption") == "none" {
 		method = "none"
 	} else if method == "" || len(method) > 40 {
 		method = "aes-256-gcm"
 	}
-	
+
 	out.Method = method
 	out.Password = password
-	
+
 	if plugin := q.Get("plugin"); plugin != "" {
 		parts := strings.SplitN(plugin, ";", 2)
 		out.Plugin = parts[0]
