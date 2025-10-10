@@ -232,21 +232,33 @@ func (p *SingBoxProxy) DialContext(ctx context.Context, network string, addr *ne
 	}
 
 	targetAddr := metadata.SocksaddrFromNet(addr)
-
 	resC := make(chan connResult, 1)
 
 	go func() {
-		conn, err := p.outbound.DialContext(ctx, network, targetAddr)
-		resC <- connResult{conn, err}
+		conn, err := p.outbound.DialContext(context.Background(), network, targetAddr)
+
+		// try to deliver result, or clean up if context/timeout fired first
+		select {
+		case resC <- connResult{conn, err}:
+		case <-ctx.Done():
+			if conn != nil {
+				_ = conn.Close()
+			}
+		}
 	}()
+
+	timer := time.NewTimer(p.timeout)
+	defer timer.Stop()
 
 	select {
 	case <-ctx.Done():
 		return nil, ctx.Err()
+
+	case <-timer.C:
+		return nil, ErrProxyDialTimeoutReached
+
 	case res := <-resC:
 		return res.conn, res.err
-	case <-time.After(p.timeout):
-		return nil, ErrProxyDialTimeoutReached
 	}
 }
 
