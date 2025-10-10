@@ -33,6 +33,7 @@ type SingBoxProxy struct {
 	original string
 	proxyIP  net.IP
 	typed    string
+	timeout  time.Duration
 }
 
 var globalBox *singBoxContext
@@ -161,6 +162,7 @@ func newSingBoxProxy(
 	}
 
 	p.options = options
+	p.timeout = timeout
 	p.outbound = createOutbound
 	p.resolveAndStoreAddr()
 	return p, nil
@@ -226,14 +228,28 @@ func (p *SingBoxProxy) DialContext(ctx context.Context, network string, addr *ne
 
 	targetAddr := metadata.SocksaddrFromNet(addr)
 
-	dialedConn, err := p.outbound.DialContext(ctx, network, targetAddr)
-	if err != nil {
-		if ctx.Err() != nil {
-			return nil, ctx.Err()
+	var errC chan error
+	var connC chan net.Conn
+
+	go func() {
+		conn, err := p.outbound.DialContext(ctx, network, targetAddr)
+		if err != nil {
+			errC <- err
+			return
 		}
-		return nil, fmt.Errorf("sing-box dial failed: %w", err)
+		connC <- conn
+	}()
+
+	select {
+	case <-ctx.Done():
+		return nil, ctx.Err()
+	case <-time.After(p.timeout):
+		return nil, ErrProxyDialTimeoutReached
+	case conn := <-connC:
+		return conn, nil
+	case err := <-errC:
+		return nil, err
 	}
-	return dialedConn, nil
 }
 
 func (p *SingBoxProxy) resolveAndStoreAddr() {

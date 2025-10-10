@@ -18,9 +18,14 @@ import (
 )
 
 var (
-	ErrInvalidProxyFormat = errors.New("invalid proxy format")
-	ErrUnsupportedNetwork = errors.New("unsupported network")
-	ErrMissingTarget      = errors.New("missing target")
+	ErrInvalidProxyFormat      = errors.New("invalid proxy format")
+	ErrUnsupportedScheme       = errors.New("unsupported proxy scheme")
+	ErrMissingTarget           = errors.New("missing target")
+	ErrProxyDialTimeoutReached = &net.OpError{
+		Op:  "dial",
+		Net: "proxy dial timeout",
+		Err: errors.New("proxy dial timed out"),
+	}
 )
 
 type vmessLinkData struct {
@@ -81,7 +86,7 @@ func getProxyType(scheme string) (string, error) {
 	case "naive", "naive+https":
 		return "naive", nil
 	default:
-		return "", fmt.Errorf("%w: unknown scheme %s", ErrUnsupportedNetwork, scheme)
+		return "", fmt.Errorf("%w: unknown scheme %s", ErrUnsupportedScheme, scheme)
 	}
 }
 
@@ -146,7 +151,7 @@ func parseProxyURL(out any, u *url.URL, typed string, timeout time.Duration) (er
 	case "direct", "tor":
 		return nil
 	default:
-		return fmt.Errorf("%w: %s", ErrUnsupportedNetwork, typed)
+		return fmt.Errorf("%w: %s", ErrUnsupportedScheme, typed)
 	}
 }
 
