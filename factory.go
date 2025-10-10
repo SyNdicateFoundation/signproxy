@@ -243,10 +243,10 @@ func (p *SingBoxProxy) DialContext(ctx context.Context, network string, addr *ne
 	select {
 	case <-ctx.Done():
 		return nil, ctx.Err()
-	case <-time.After(p.timeout):
-		return nil, ErrProxyDialTimeoutReached
 	case res := <-resC:
 		return res.conn, res.err
+	case <-time.After(p.timeout):
+		return nil, ErrProxyDialTimeoutReached
 	}
 }
 
