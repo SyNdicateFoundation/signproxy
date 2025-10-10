@@ -2,30 +2,34 @@
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/SyNdicateFoundation/signproxy)](https://goreportcard.com/report/github.com/SyNdicateFoundation/signproxy)
 
-Sign-Proxy is a high-level Go library designed to simplify connecting through various proxy protocols. Built as a wrapper around the powerful `sagernet/sing-box` core, its primary feature is its exceptional ability to parse and handle a vast number of non-standard, malformed, and "dirty" proxy URLs found in the wild.
+Sign-Proxy is a high-level Go library designed to simplify connecting through various proxy protocols. Built as a
+wrapper around the powerful `sagernet/sing-box` core, its primary feature is its exceptional ability to parse and handle
+a vast number of non-standard, malformed, and "dirty" proxy URLs found in the wild.
 
-If you need to consume proxy lists from public Telegram channels, subscription services, or other non-standard sources, Sign-Proxy is built to handle the mess for you.
+If you need to consume proxy lists from public Telegram channels, subscription services, or other non-standard sources,
+Sign-Proxy is built to handle the mess for you.
 
 ## Features
 
--   **Unified `Proxy` Interface**: A single, simple API for Shadowsocks, VLESS, VMess, Trojan, and more.
--   **Powered by `sing-box`**: Leverages the robust, performant, and up-to-date networking core of `sing-box`.
--   **Resilient URL Parsing**: Intelligently cleans and fixes common errors in proxy URLs *before* parsing, dramatically increasing success rates with public proxy lists.
--   **Wide Protocol Support**:
-    -   VLESS (with REALITY, gRPC, WebSocket, HTTP Upgrade)
-    -   VMess
-    -   Trojan
-    -   Shadowsocks (including `encryption=none` variants and SIP003 formats)
-    -   Hysteria/Hysteria2
-    -   WireGuard
-    -   SOCKS5/SOCKS4
-    -   HTTP/HTTPS/HTTP2
-    -   TUIC
-    -   SSH
-    -   AnyTLS
-    -   NaiveProxy
-    -   ShadowTLS
--   **Concurrency-Ready**: Includes a `FromURLs` helper to parse large lists of proxies in parallel.
+- **Unified `Proxy` Interface**: A single, simple API for Shadowsocks, VLESS, VMess, Trojan, and more.
+- **Powered by `sing-box`**: Leverages the robust, performant, and up-to-date networking core of `sing-box`.
+- **Resilient URL Parsing**: Intelligently cleans and fixes common errors in proxy URLs *before* parsing, dramatically
+  increasing success rates with public proxy lists.
+- **Wide Protocol Support**:
+    - VLESS (with REALITY, gRPC, WebSocket, HTTP Upgrade)
+    - VMess
+    - Trojan
+    - Shadowsocks (including `encryption=none` variants and SIP003 formats)
+    - Hysteria/Hysteria2
+    - WireGuard
+    - SOCKS5/SOCKS4
+    - HTTP/HTTPS/HTTP2
+    - TUIC
+    - SSH
+    - AnyTLS
+    - NaiveProxy
+    - ShadowTLS
+- **Concurrency-Ready**: Includes a `FromURLs` helper to parse large lists of proxies in parallel.
 
 ## Installation
 
@@ -34,13 +38,15 @@ go get github.com/SyNdicateFoundation/signproxy
 ```
 
 Use following tags for building you binary
+
 ```
 -tags=with_utls,with_gvisor,with_quic,with_dhcp,with_acme,with_clash_api,with_wireguard
 ```
 
 ## Basic Usage
 
-The library exposes a straightforward API. You provide a proxy URL, and you get back an object that satisfies the `Proxy` interface, which has a `DialContext` method you can use in any standard Go networking code.
+The library exposes a straightforward API. You provide a proxy URL, and you get back an object that satisfies the
+`Proxy` interface, which has a `DialContext` method you can use in any standard Go networking code.
 
 ```go
 package main
@@ -224,44 +230,50 @@ func testProxy(p signproxy.Proxy, results chan<- TestResult, wg *sync.WaitGroup)
 
 ## How The Robust Parsing Works
 
-Many proxy providers and aggregators generate URLs that don't strictly adhere to RFC standards. They often contain extra metadata, comments, or invalid characters that cause standard Go parsers like `net/url.Parse` to fail.
+Many proxy providers and aggregators generate URLs that don't strictly adhere to RFC standards. They often contain extra
+metadata, comments, or invalid characters that cause standard Go parsers like `net/url.Parse` to fail.
 
 Sign-Proxy addresses this with a multi-layered cleaning process in its `FromURL` function:
 
-1.  **Isolate Name**: The URL fragment (`#...`) is immediately separated to preserve the proxy's intended name.
-2.  **General Cleaning**: Removes common junk query parameters like `ps`, `remarks`, `tag`, etc.
-3.  **Protocol-Specific Cleaning**: Before parsing, it applies a set of "brute-force" rules tailored to each protocol's common mistakes:
-    *   **VMess**: Strips all non-Base64 characters from the payload.
-    *   **Hysteria2/Trojan**: Escapes invalid characters found in `userinfo` (like `-->`, `^`, `🤠`).
-    *   **Shadowsocks**: Corrects malformed structures like `ss://user@host:port@comment`.
-    *   **VLESS**: Cleans junk data appended to hostnames (e.g., `...:port---Telegram---`).
-4.  **Standard Parsing**: Only after these cleaning steps is the URL passed to Go's standard parser.
-5.  **Post-Parsing Fallbacks**: Within the individual protocol parsers, it applies fallbacks for common logical errors, such as using a default cipher when a Shadowsocks method is missing or handling non-standard transport names like `xhttp`.
+1. **Isolate Name**: The URL fragment (`#...`) is immediately separated to preserve the proxy's intended name.
+2. **General Cleaning**: Removes common junk query parameters like `ps`, `remarks`, `tag`, etc.
+3. **Protocol-Specific Cleaning**: Before parsing, it applies a set of "brute-force" rules tailored to each protocol's
+   common mistakes:
+    * **VMess**: Strips all non-Base64 characters from the payload.
+    * **Hysteria2/Trojan**: Escapes invalid characters found in `userinfo` (like `-->`, `^`, `🤠`).
+    * **Shadowsocks**: Corrects malformed structures like `ss://user@host:port@comment`.
+    * **VLESS**: Cleans junk data appended to hostnames (e.g., `...:port---Telegram---`).
+4. **Standard Parsing**: Only after these cleaning steps is the URL passed to Go's standard parser.
+5. **Post-Parsing Fallbacks**: Within the individual protocol parsers, it applies fallbacks for common logical errors,
+   such as using a default cipher when a Shadowsocks method is missing or handling non-standard transport names like
+   `xhttp`.
 
 ## Supported Protocols
 
 The library supports the following URL schemes:
 
--   **VMess** (`vless://`)
--   **HTTP** / **HTTPS** / **HTTP2** (`http://`, `https://`, `http2://`)
--   **VLESS** (`vless://`)
--   **Trojan** (`trojan://`, `trojan-go://`)
--   **Shadowsocks** (`ss://`)
--   **TUIC** (`tuic://`)
--   **Hysteria** (`hysteria://`)
--   **Hysteria2** (`hysteria2://`)
--   **SSH** (`ssh://`)
--   **SOCKS5** / **SOCKS4** (`socks5://`, `socks4://`)
--   **WireGuard** (`wireguard://`)
--   **Direct** (`direct`)
--   **Tor** (`tor://`)
--   **AnyTLS** (`anytls://`, `atls://`)
--   **ShadowTLS** (`shadowtls://`)
--   **NaiveProxy** (`naive://`, `naive+https://`)
+- **VMess** (`vless://`)
+- **HTTP** / **HTTPS** / **HTTP2** (`http://`, `https://`, `http2://`)
+- **VLESS** (`vless://`)
+- **Trojan** (`trojan://`, `trojan-go://`)
+- **Shadowsocks** (`ss://`)
+- **TUIC** (`tuic://`)
+- **Hysteria** (`hysteria://`)
+- **Hysteria2** (`hysteria2://`)
+- **SSH** (`ssh://`)
+- **SOCKS5** / **SOCKS4** (`socks5://`, `socks4://`)
+- **WireGuard** (`wireguard://`)
+- **Direct** (`direct`)
+- **Tor** (`tor://`)
+- **AnyTLS** (`anytls://`, `atls://`)
+- **ShadowTLS** (`shadowtls://`)
+- **NaiveProxy** (`naive://`, `naive+https://`)
+
 ## License
 
 This project is licensed under the MIT License.
 
 ## Credits
--   [sing-box](https://github.com/SagerNet/sing-box) core library
--   [TGParse](https://github.com/Surfboardv2ray/TGParse) used proxies for test propose
+
+- [sing-box](https://github.com/SagerNet/sing-box) core library
+- [TGParse](https://github.com/Surfboardv2ray/TGParse) used proxies for test propose
