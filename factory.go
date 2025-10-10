@@ -217,6 +217,11 @@ func (p *SingBoxProxy) Addr() net.IP {
 	return p.proxyIP
 }
 
+type connResult struct {
+	conn net.Conn
+	err  error
+}
+
 func (p *SingBoxProxy) DialContext(ctx context.Context, network string, addr *net.TCPAddr) (net.Conn, error) {
 	if addr == nil {
 		return nil, ErrMissingTarget
@@ -228,16 +233,11 @@ func (p *SingBoxProxy) DialContext(ctx context.Context, network string, addr *ne
 
 	targetAddr := metadata.SocksaddrFromNet(addr)
 
-	var errC chan error
-	var connC chan net.Conn
+	resC := make(chan connResult, 1)
 
 	go func() {
 		conn, err := p.outbound.DialContext(ctx, network, targetAddr)
-		if err != nil {
-			errC <- err
-			return
-		}
-		connC <- conn
+		resC <- connResult{conn, err}
 	}()
 
 	select {
@@ -245,10 +245,8 @@ func (p *SingBoxProxy) DialContext(ctx context.Context, network string, addr *ne
 		return nil, ctx.Err()
 	case <-time.After(p.timeout):
 		return nil, ErrProxyDialTimeoutReached
-	case conn := <-connC:
-		return conn, nil
-	case err := <-errC:
-		return nil, err
+	case res := <-resC:
+		return res.conn, res.err
 	}
 }
 
