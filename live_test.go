@@ -1,4 +1,4 @@
-package signproxy
+package singproxy
 
 import (
 	"encoding/base64"

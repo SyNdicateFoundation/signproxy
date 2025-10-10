@@ -1,4 +1,4 @@
-module github.com/SyNdicateFoundation/signproxy
+module github.com/SyNdicateFoundation/singproxy
 
 go 1.25.0
 

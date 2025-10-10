@@ -1,13 +1,13 @@
-# Sign-Proxy: A Robust Go Proxy Client Library
+# Sing-Proxy: A Robust Go Proxy Client Library
 
-[![Go Report Card](https://goreportcard.com/badge/github.com/SyNdicateFoundation/signproxy)](https://goreportcard.com/report/github.com/SyNdicateFoundation/signproxy)
+[![Go Report Card](https://goreportcard.com/badge/github.com/SyNdicateFoundation/singproxy)](https://goreportcard.com/report/github.com/SyNdicateFoundation/singproxy)
 
-Sign-Proxy is a high-level Go library designed to simplify connecting through various proxy protocols. Built as a
+Sing-Proxy is a high-level Go library designed to simplify connecting through various proxy protocols. Built as a
 wrapper around the powerful `sagernet/sing-box` core, its primary feature is its exceptional ability to parse and handle
 a vast number of non-standard, malformed, and "dirty" proxy URLs found in the wild.
 
 If you need to consume proxy lists from public Telegram channels, subscription services, or other non-standard sources,
-Sign-Proxy is built to handle the mess for you.
+Sing-Proxy is built to handle the mess for you.
 
 ## Features
 
@@ -34,7 +34,7 @@ Sign-Proxy is built to handle the mess for you.
 ## Installation
 
 ```sh
-go get github.com/SyNdicateFoundation/signproxy
+go get github.com/SyNdicateFoundation/singproxy
 ```
 
 Use following tags for building you binary
@@ -59,7 +59,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/SyNdicateFoundation/signproxy"
+	"github.com/SyNdicateFoundation/singproxy"
 )
 
 func main() {
@@ -68,7 +68,7 @@ func main() {
 	timeout := 8 * time.Second
 
 	// 1. Parse the URL using the factory function.
-	proxy, err := signproxy.FromURL(timeout, proxyURL)
+	proxy, err := singproxy.FromURL(timeout, proxyURL)
 	if err != nil {
 		panic(fmt.Sprintf("Failed to parse proxy URL: %v", err))
 	}
@@ -121,7 +121,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/SyNdicateFoundation/signproxy"
+	"github.com/SyNdicateFoundation/singproxy"
 )
 
 // TestResult holds the outcome of a single proxy test.
@@ -146,7 +146,7 @@ func main() {
 	timeout := 8 * time.Second
 
 	// Use FromURLs to parse all proxies concurrently. It returns valid proxies and any errors.
-	proxies, errs := signproxy.FromURLs(timeout, proxyURLs...)
+	proxies, errs := singproxy.FromURLs(timeout, proxyURLs...)
 
 	// Print any parsing errors encountered.
 	if len(errs) > 0 {
@@ -182,7 +182,7 @@ func main() {
 }
 
 // testProxy attempts to make an HTTP GET request through the given proxy and sends the result to a channel.
-func testProxy(p signproxy.Proxy, results chan<- TestResult, wg *sync.WaitGroup) {
+func testProxy(p singproxy.Proxy, results chan<- TestResult, wg *sync.WaitGroup) {
 	defer wg.Done()
 
 	result := TestResult{ProxyName: p.String()}
@@ -233,7 +233,7 @@ func testProxy(p signproxy.Proxy, results chan<- TestResult, wg *sync.WaitGroup)
 Many proxy providers and aggregators generate URLs that don't strictly adhere to RFC standards. They often contain extra
 metadata, comments, or invalid characters that cause standard Go parsers like `net/url.Parse` to fail.
 
-Sign-Proxy addresses this with a multi-layered cleaning process in its `FromURL` function:
+Sing-Proxy addresses this with a multi-layered cleaning process in its `FromURL` function:
 
 1. **Isolate Name**: The URL fragment (`#...`) is immediately separated to preserve the proxy's intended name.
 2. **General Cleaning**: Removes common junk query parameters like `ps`, `remarks`, `tag`, etc.

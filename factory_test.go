@@ -1,4 +1,4 @@
-package signproxy
+package singproxy
 
 import (
 	"context"
@@ -118,7 +118,7 @@ func TestDirectConnection(t *testing.T) {
 		t.Fatalf("Failed to create request: %v", err)
 	}
 
-	req.Header.Set("User-Agent", "SignProxy-Test-Client")
+	req.Header.Set("User-Agent", "singproxy-Test-Client")
 	resp, err := client.Do(req)
 	if err != nil {
 		t.Fatalf("Request failed: %v", err)
